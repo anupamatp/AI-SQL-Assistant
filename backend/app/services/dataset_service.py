@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import desc
 
 from app.models.dataset import Dataset
 
@@ -22,3 +23,15 @@ def save_dataset(
     db.refresh(dataset)
 
     return dataset
+
+
+def get_latest_dataset(db: Session):
+    """
+    Return the most recently uploaded dataset.
+    """
+
+    return (
+        db.query(Dataset)
+        .order_by(desc(Dataset.uploaded_at))
+        .first()
+    )
