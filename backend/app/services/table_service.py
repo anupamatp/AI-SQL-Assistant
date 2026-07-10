@@ -49,6 +49,7 @@ def create_dynamic_table(table_name, dataframe, engine):
             column_name.strip()
             .replace(" ", "_")
             .replace("-", "_")
+            .lower()
         )
 
         sqlalchemy_type = get_sqlalchemy_type(dtype)

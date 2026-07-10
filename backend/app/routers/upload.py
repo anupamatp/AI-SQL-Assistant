@@ -46,6 +46,14 @@ async def upload_dataset(
             df = pd.read_csv(BytesIO(contents))
         else:
             df = pd.read_excel(BytesIO(contents))
+        df.columns = (
+                df.columns
+                .str.strip()
+                .str.replace(" ", "_")
+                .str.replace("-", "_")
+                .str.lower()
+            )
+        print(df.columns.tolist())
 
     except Exception as e:
         raise HTTPException(
