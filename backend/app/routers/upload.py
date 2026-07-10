@@ -5,7 +5,15 @@ import pandas as pd
 from fastapi import APIRouter, UploadFile, File, HTTPException
 
 from app.database import engine
-from app.services.table_service import create_dynamic_table
+from app.services.table_service import (
+    create_dynamic_table,
+    insert_dataframe
+)
+from fastapi import Depends
+from sqlalchemy.orm import Session
+
+from app.database import get_db
+from app.services.dataset_service import save_dataset
 
 router = APIRouter(
     prefix="/upload",
@@ -14,7 +22,10 @@ router = APIRouter(
 
 
 @router.post("/")
-async def upload_dataset(file: UploadFile = File(...)):
+async def upload_dataset(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
     """
     Upload a CSV or Excel dataset.
     """
@@ -54,12 +65,21 @@ async def upload_dataset(file: UploadFile = File(...)):
 
     # Create the PostgreSQL table dynamically
     try:
-        create_dynamic_table(
+        table = create_dynamic_table(
             table_name=table_name,
             dataframe=df,
             engine=engine
         )
-
+        insert_dataframe(
+            table=table,
+            dataframe=df,
+            engine=engine
+        )
+        save_dataset(
+            db=db,
+            dataset_name=file.filename,
+            table_name=table_name
+        )
     except Exception as e:
         raise HTTPException(
             status_code=500,

@@ -1,6 +1,17 @@
 import pandas as pd
-from sqlalchemy import Integer, Float, String, Boolean, DateTime
-from sqlalchemy import MetaData, Table, Column
+
+from sqlalchemy import (
+    Integer,
+    Float,
+    String,
+    Boolean,
+    DateTime,
+    MetaData,
+    Table,
+    Column,
+    insert
+)
+
 
 def get_sqlalchemy_type(dtype):
     """
@@ -21,7 +32,8 @@ def get_sqlalchemy_type(dtype):
 
     else:
         return String
-    
+
+
 def create_dynamic_table(table_name, dataframe, engine):
     """
     Create a PostgreSQL table dynamically based on the uploaded dataset.
@@ -44,6 +56,7 @@ def create_dynamic_table(table_name, dataframe, engine):
         columns.append(
             Column(clean_column_name, sqlalchemy_type)
         )
+
     table = Table(
         table_name,
         metadata,
@@ -53,3 +66,17 @@ def create_dynamic_table(table_name, dataframe, engine):
     metadata.create_all(engine)
 
     return table
+
+
+def insert_dataframe(table, dataframe, engine):
+    """
+    Insert a Pandas DataFrame into the dynamically created table.
+    """
+
+    records = dataframe.to_dict(orient="records")
+
+    with engine.begin() as connection:
+        connection.execute(
+            insert(table),
+            records
+        )
