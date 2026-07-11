@@ -18,7 +18,7 @@ export function ExportCard({ generatedSql, disabled }: ExportCardProps) {
   const handleExportExcel = async () => {
     setExportingExcel(true);
     try {
-      await exportExcel(generatedSql);
+      await exportExcel();
       toast.success("Excel downloaded");
     } catch (error) {
       const { message, detail } = extractErrorMessage(error);
@@ -31,7 +31,7 @@ export function ExportCard({ generatedSql, disabled }: ExportCardProps) {
   const handleExportPdf = async () => {
     setExportingPdf(true);
     try {
-      await exportPdf(generatedSql);
+      await exportPdf();
       toast.success("PDF downloaded");
     } catch (error) {
       const { message, detail } = extractErrorMessage(error);
