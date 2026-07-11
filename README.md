@@ -245,9 +245,6 @@ http://localhost:5173
 
 # 📸 Screenshots
 
-## 📸 Screenshots
-
-### Dashboard
 ![Dashboard Overview](screenshots/dashboard1.png)
 
 ![Dashboard](screenshots/dashboard2.png)
