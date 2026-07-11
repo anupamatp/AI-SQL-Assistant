@@ -13,6 +13,29 @@ from sqlalchemy import (
 )
 
 
+def detect_date_columns(dataframe):
+    """
+    Automatically convert columns that contain dates.
+    """
+
+    for column in dataframe.columns:
+
+        if dataframe[column].dtype == "object":
+
+            try:
+                converted = pd.to_datetime(
+                    dataframe[column],
+                    errors="raise"
+                )
+
+                dataframe[column] = converted
+
+            except Exception:
+                pass
+
+    return dataframe
+
+
 def get_sqlalchemy_type(dtype):
     """
     Convert Pandas data type to SQLAlchemy type.
@@ -39,6 +62,8 @@ def create_dynamic_table(table_name, dataframe, engine):
     Create a PostgreSQL table dynamically based on the uploaded dataset.
     """
 
+    dataframe = detect_date_columns(dataframe)
+
     metadata = MetaData()
 
     columns = []
@@ -55,7 +80,10 @@ def create_dynamic_table(table_name, dataframe, engine):
         sqlalchemy_type = get_sqlalchemy_type(dtype)
 
         columns.append(
-            Column(clean_column_name, sqlalchemy_type)
+            Column(
+                clean_column_name,
+                sqlalchemy_type
+            )
         )
 
     table = Table(
@@ -74,8 +102,19 @@ def insert_dataframe(table, dataframe, engine):
     Insert a Pandas DataFrame into the dynamically created table.
     """
 
+    dataframe = detect_date_columns(dataframe)
+
+    # Convert pandas missing values to Python None
+    # Convert dataframe to object dtype first
+    dataframe = dataframe.astype(object)
+
+    # Replace every NaN / <NA> with None
+    dataframe = dataframe.where(pd.notna(dataframe), None)
+
     records = dataframe.to_dict(orient="records")
 
+    print(records[20])
+    print(type(records[20]["city"]))
     with engine.begin() as connection:
         connection.execute(
             insert(table),

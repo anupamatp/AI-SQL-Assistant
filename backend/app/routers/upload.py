@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.services.dataset_service import save_dataset
-
+from app.services.history_service import clear_history
 router = APIRouter(
     prefix="/upload",
     tags=["Dataset Upload"]
@@ -47,14 +47,38 @@ async def upload_dataset(
         else:
             df = pd.read_excel(BytesIO(contents))
         df.columns = (
-                df.columns
-                .str.strip()
-                .str.replace(" ", "_")
-                .str.replace("-", "_")
-                .str.lower()
-            )
-        print(df.columns.tolist())
+            df.columns
+            .str.strip()
+            .str.replace(" ", "_")
+            .str.replace("-", "_")
+            .str.lower()
+        )
+        df = df.replace(r'^\s*$', pd.NA, regex=True)
+        print("\n===== Missing Values =====")
+        print(df.isna().sum())
 
+        print("\n===== Row 1021 =====")
+        print(df.iloc[20])   # 21st row
+
+        print("\n===== City value =====")
+        print(repr(df.iloc[20]["city"]))
+        print("Missing values:")
+        print(df.isna().sum())
+
+        print("\nRows with missing city:")
+        print(df[df["city"].isna()])
+# Convert order_date to datetime if the column exists
+        if "order_date" in df.columns:
+            df["order_date"] = pd.to_datetime(
+                df["order_date"],
+                format="mixed",
+                errors="raise"
+        )
+
+        print(df.dtypes)
+        print(df["order_date"].head())
+        print(df.columns.tolist())
+        
     except Exception as e:
         raise HTTPException(
             status_code=400,
@@ -88,6 +112,7 @@ async def upload_dataset(
             dataset_name=file.filename,
             table_name=table_name
         )
+        clear_history(db)
     except Exception as e:
         raise HTTPException(
             status_code=500,

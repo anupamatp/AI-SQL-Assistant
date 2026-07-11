@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from google import genai
+from google.genai.errors import ClientError, ServerError
 
 load_dotenv()
 
@@ -10,11 +11,10 @@ client = genai.Client(
 )
 
 
-def generate_sql(question, table_name, columns):
-    """
-    Generate PostgreSQL SQL from a natural language question.
-    """
 
+
+
+def generate_sql(question, table_name, columns):
     prompt = f"""
 You are an expert PostgreSQL SQL generator.
 
@@ -36,9 +36,21 @@ Question:
 {question}
 """
 
-    response = client.models.generate_content(
-    model="gemini-3.1-flash-lite",
-    contents=prompt
-)
+    try:
+        response = client.models.generate_content(
+            model="gemini-3.5-flash",
+            contents=prompt
+        )
 
-    return response.text.strip()
+        return response.text.strip()
+
+    except ServerError:
+        raise Exception(
+            "Gemini AI is temporarily unavailable. Please try again."
+        )
+
+    except ClientError as e:
+        raise Exception(f"Gemini API Error: {e}")
+
+    except Exception as e:
+        raise Exception(f"Unexpected AI Error: {e}")
