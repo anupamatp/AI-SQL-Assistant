@@ -145,6 +145,24 @@ The application uses PostgreSQL to store uploaded dataset metadata and query his
 - Dynamic table creation enables the application to support datasets with different schemas without modifying the application's database structure.
 
 ---
+# 📂 Sample Dataset
+
+A sample dataset is included with the project for testing the application's features.
+
+**Location**
+
+```text
+sample-datasets/sales.csv
+```
+
+The dataset can be uploaded directly into the application to test:
+
+- Dataset upload
+- Automatic table creation
+- Natural language to SQL conversion
+- AI-generated insights
+- Export to Excel and PDF
+---
 
 # ⚙️ Installation
 
